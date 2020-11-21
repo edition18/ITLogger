@@ -1,28 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { connect } from "react-redux";
 import LogItem from "./LogItem";
 import Preloader from "../layout/Preloader";
+import PropTypes from "prop-types";
+import { getLogs } from "../../actions/logActions";
 
-const Logs = (props) => {
-  const [logs, setLogs] = useState([]);
-  // empty array, since we would have multiple items in Logs
-  const [loading, setLoading] = useState(false);
-
+const Logs = ({ log: { logs, loading }, getLogs }) => {
   useEffect(() => {
     getLogs();
     // eslint-disable-next-line
   }, []);
 
-  const getLogs = async () => {
-    setLoading(true);
-    const res = await fetch("/logs");
-    const data = await res.json();
-
-    setLogs(data);
-    setLoading(false);
-  };
-
-  if (loading) {
-    return <h4>Loading</h4>;
+  if (loading || logs === null) {
+    // logs take some time to load
+    return <Preloader />;
   }
 
   return (
@@ -39,6 +30,15 @@ const Logs = (props) => {
   );
 };
 
-Logs.propTypes = {};
+Logs.propTypes = {
+  log: PropTypes.object.isRequired,
+};
 
-export default Logs;
+const mapStateToProps = (state) => ({
+  log: state.log,
+});
+
+export default connect(mapStateToProps, { getLogs })(Logs);
+// connect returns a high level method
+//connect takes in two things
+// mapStateToProps => anything u want from app level state u bring into component as prop
